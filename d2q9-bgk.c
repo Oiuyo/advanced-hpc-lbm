@@ -196,7 +196,9 @@ int main(int argc, char* argv[])
 
 int timestep(const t_param params, t_speed* cells, t_speed* tmp_cells, int* obstacles)
 {
-  const float c_sq = 1.f / 3.f; /* square of speed of sound */
+  const float c_sq = 3.f; /* square of speed of sound */
+  const float csq =  c_sq * 0.5;
+  const float csq2 = 0.5 * c_sq * c_sq;
   const float w0 = 4.f / 9.f;  /* weighting factor */
   const float w1 = 1.f / 9.f;  /* weighting factor */
   const float w2 = 1.f / 36.f; /* weighting factor */
@@ -277,33 +279,33 @@ int timestep(const t_param params, t_speed* cells, t_speed* tmp_cells, int* obst
         float d_equ[NSPEEDS];
         /* zero velocity density: weight w0 */
         d_equ[0] = w0 * local_density
-                   * (1.f - u_sq / (2.f * c_sq));
+                   * (1.f - u_sq * csq);
         /* axis speeds: weight w1 */
-        d_equ[1] = w1 * local_density * (1.f + u[1] / c_sq
-                                         + (u[1] * u[1]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
-        d_equ[2] = w1 * local_density * (1.f + u[2] / c_sq
-                                         + (u[2] * u[2]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
-        d_equ[3] = w1 * local_density * (1.f + u[3] / c_sq
-                                         + (u[3] * u[3]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
-        d_equ[4] = w1 * local_density * (1.f + u[4] / c_sq
-                                         + (u[4] * u[4]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
+        d_equ[1] = w1 * local_density * (1.f + u[1] * c_sq
+                                         + (u[1] * u[1]) * (csq2)
+                                         - u_sq * csq);
+        d_equ[2] = w1 * local_density * (1.f + u[2] * c_sq
+                                         + (u[2] * u[2]) * (csq2)
+                                         - u_sq * csq);
+        d_equ[3] = w1 * local_density * (1.f + u[3] * c_sq
+                                         + (u[3] * u[3]) * (csq2)
+                                         - u_sq * csq);
+        d_equ[4] = w1 * local_density * (1.f + u[4] * c_sq
+                                         + (u[4] * u[4]) * (csq2)
+                                         - u_sq * csq);
         /* diagonal speeds: weight w2 */
-        d_equ[5] = w2 * local_density * (1.f + u[5] / c_sq
-                                         + (u[5] * u[5]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
-        d_equ[6] = w2 * local_density * (1.f + u[6] / c_sq
-                                         + (u[6] * u[6]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
-        d_equ[7] = w2 * local_density * (1.f + u[7] / c_sq
-                                         + (u[7] * u[7]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
-        d_equ[8] = w2 * local_density * (1.f + u[8] / c_sq
-                                         + (u[8] * u[8]) / (2.f * c_sq * c_sq)
-                                         - u_sq / (2.f * c_sq));
+        d_equ[5] = w2 * local_density * (1.f + u[5] * c_sq
+                                         + (u[5] * u[5]) * (csq2)
+                                         - u_sq * csq);
+        d_equ[6] = w2 * local_density * (1.f + u[6] * c_sq
+                                         + (u[6] * u[6]) * (csq2)
+                                         - u_sq * csq);
+        d_equ[7] = w2 * local_density * (1.f + u[7] * c_sq
+                                         + (u[7] * u[7]) * (csq2)
+                                         - u_sq * csq);
+        d_equ[8] = w2 * local_density * (1.f + u[8] * c_sq
+                                         + (u[8] * u[8]) * (csq2)
+                                         - u_sq * csq);
 
         /* relaxation step */
         for (int kk = 0; kk < NSPEEDS; kk++)
