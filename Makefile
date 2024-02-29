@@ -3,7 +3,7 @@
 EXE=d2q9-bgk
 
 CC=icc
-CFLAGS= -std=c99 -w2 -Ofast -xHost
+CFLAGS= -std=c99 -w2 -Ofast -xHost -qopenmp
 LIBS = -lm
 
 FINAL_STATE_FILE=./final_state.dat

@@ -206,9 +206,10 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
   __assume((params.ny)%128==0);
   __assume_aligned(cells, 64);
   __assume_aligned(tmp_cells, 64);
+
+  #pragma omp parallel for collapse(2)
   for (int jj = 0; jj < params.ny; jj++)
   {
-    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
       int y_n = (jj + 1) % params.ny;
@@ -317,7 +318,7 @@ static int accelerate_flow(const t_param params, t_speed* __restrict__ cells, co
   
   __assume_aligned(cells, 64);
   __assume((params.nx)%128==0);
-  #pragma omp simd
+  #pragma omp parallel for num_threads(1)
   for (int ii = 0; ii < params.nx; ii++)
   {
     /* if the cell is not occupied and
@@ -354,9 +355,9 @@ float av_velocity(const t_param params, t_speed* cells, int* obstacles)
   __assume((params.nx)%128==0);
   __assume((params.ny)%128==0);
   /* loop over all non-blocked cells */
+  #pragma omp parallel for collapse(2)
   for (int jj = 0; jj < params.ny; jj++)
   {
-    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
       /* ignore occupied cells */
@@ -495,9 +496,9 @@ int initialise(const char* paramfile, const char* obstaclefile,
   __assume_aligned(*cells_ptr, 64);
   __assume((params->nx)%128==0);
   __assume((params->ny)%128==0);
+  #pragma omp parallel for collapse(2)
   for (int jj = 0; jj < params->ny; jj++)
   {
-    #pragma omp simd
     for (int ii = 0; ii < params->nx; ii++)
     {
       /* centre */
@@ -635,9 +636,9 @@ int write_values(const t_param params, t_speed* cells, int* obstacles, float* av
 
   __assume((params.nx)%128==0);
   __assume((params.ny)%128==0);
+  #pragma omp parallel for collapse(2)
   for (int jj = 0; jj < params.ny; jj++)
   {
-    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
       /* an occupied cell */
