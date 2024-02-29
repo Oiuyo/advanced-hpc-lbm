@@ -195,7 +195,6 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
 {
   const float c_sq = 3.f; /* square of speed of sound */
   const float csq =  c_sq * 0.5;
-  const float csq2 = 0.5 * c_sq * c_sq;
   const float w0 = 4.f / 9.f;  /* weighting factor */
   const float w1 = 1.f / 9.f;  /* weighting factor */
   const float w2 = 1.f / 36.f; /* weighting factor */
@@ -222,40 +221,40 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
       tmp_cells->speeds[8][current] = cells->speeds[6][x_e + y_s*params.nx];
       }
       else {
-        float currentSpeeds[NSPEEDS];
-        currentSpeeds[0] = cells->speeds[0][current];
-        currentSpeeds[1] = cells->speeds[1][x_w + jj*params.nx];
-        currentSpeeds[2] = cells->speeds[2][ii + y_s*params.nx];
-        currentSpeeds[3] = cells->speeds[3][x_e + jj*params.nx];
-        currentSpeeds[4] = cells->speeds[4][ii + y_n*params.nx];
-        currentSpeeds[5] = cells->speeds[5][x_w + y_s*params.nx];
-        currentSpeeds[6] = cells->speeds[6][x_e + y_s*params.nx];
-        currentSpeeds[7] = cells->speeds[7][x_e + y_n*params.nx];
-        currentSpeeds[8] = cells->speeds[8][x_w + y_n*params.nx];
+        float currentspeeds[NSPEEDS];
+        currentspeeds[0] = cells->speeds[0][current];
+        currentspeeds[1] = cells->speeds[1][x_w + jj*params.nx];
+        currentspeeds[2] = cells->speeds[2][ii + y_s*params.nx];
+        currentspeeds[3] = cells->speeds[3][x_e + jj*params.nx];
+        currentspeeds[4] = cells->speeds[4][ii + y_n*params.nx];
+        currentspeeds[5] = cells->speeds[5][x_w + y_s*params.nx];
+        currentspeeds[6] = cells->speeds[6][x_e + y_s*params.nx];
+        currentspeeds[7] = cells->speeds[7][x_e + y_n*params.nx];
+        currentspeeds[8] = cells->speeds[8][x_w + y_n*params.nx];
         /* compute local density total */
         float local_density = 0.f;
 
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
-          local_density += currentSpeeds[kk];
+          local_density += currentspeeds[kk];
         }
 
+                float inv_ld = 1.f / local_density;
+
         /* compute x velocity component */
-        float u_x = (currentSpeeds[1]
-                      + currentSpeeds[5]
-                      + currentSpeeds[8]
-                      - (currentSpeeds[3]
-                         + currentSpeeds[6]
-                         + currentSpeeds[7]))
-                     / local_density;
+        float u_x = (currentspeeds[1]
+                      + currentspeeds[5]
+                      + currentspeeds[8]
+                      - (currentspeeds[3]
+                         + currentspeeds[6]
+                         + currentspeeds[7]));
         /* compute y velocity component */
-        float u_y = (currentSpeeds[2]
-                      + currentSpeeds[5]
-                      + currentSpeeds[6]
-                      - (currentSpeeds[4]
-                         + currentSpeeds[7]
-                         + currentSpeeds[8]))
-                     / local_density;
+        float u_y = (currentspeeds[2]
+                      + currentspeeds[5]
+                      + currentspeeds[6]
+                      - (currentspeeds[4]
+                         + currentspeeds[7]
+                         + currentspeeds[8]));
 
         /* velocity squared */
         float u_sq = u_x * u_x + u_y * u_y;
@@ -271,48 +270,28 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
         u[7] = - u_x - u_y;  /* south-west */
         u[8] =   u_x - u_y;  /* south-east */
 
-        /* equilibrium densities */
-        float d_equ[NSPEEDS];
-        /* zero velocity density: weight w0 */
-        d_equ[0] = w0 * local_density
-                   * (1.f - u_sq * csq);
-        /* axis speeds: weight w1 */
-        d_equ[1] = w1 * local_density * (1.f + u[1] * c_sq
-                                         + (u[1] * u[1]) * (csq2)
-                                         - u_sq * csq);
-        d_equ[2] = w1 * local_density * (1.f + u[2] * c_sq
-                                         + (u[2] * u[2]) * (csq2)
-                                         - u_sq * csq);
-        d_equ[3] = w1 * local_density * (1.f + u[3] * c_sq
-                                         + (u[3] * u[3]) * (csq2)
-                                         - u_sq * csq);
-        d_equ[4] = w1 * local_density * (1.f + u[4] * c_sq
-                                         + (u[4] * u[4]) * (csq2)
-                                         - u_sq * csq);
-        /* diagonal speeds: weight w2 */
-        d_equ[5] = w2 * local_density * (1.f + u[5] * c_sq
-                                         + (u[5] * u[5]) * (csq2)
-                                         - u_sq * csq);
-        d_equ[6] = w2 * local_density * (1.f + u[6] * c_sq
-                                         + (u[6] * u[6]) * (csq2)
-                                         - u_sq * csq);
-        d_equ[7] = w2 * local_density * (1.f + u[7] * c_sq
-                                         + (u[7] * u[7]) * (csq2)
-                                         - u_sq * csq);
-        d_equ[8] = w2 * local_density * (1.f + u[8] * c_sq
-                                         + (u[8] * u[8]) * (csq2)
-                                         - u_sq * csq);
+        float common = local_density - u_sq * csq * inv_ld;
 
-        /* relaxation step */
-        for (int kk = 0; kk < NSPEEDS; kk++)
-        {
-          tmp_cells->speeds[kk][current] = currentSpeeds[kk]
+       tmp_cells->speeds[0][current] = currentspeeds[0]
                                                   + params.omega
-                                                  * (d_equ[kk] - currentSpeeds[kk]);
+                                                  * (w0 * common
+                                                   - currentspeeds[0]);
+        for (int kk = 1; kk < 5; kk++)
+        {
+          tmp_cells->speeds[kk][current] = currentspeeds[kk]
+                                                  + params.omega
+                                                  * (w1 * (common + (u[kk] * c_sq) * (1 + u[kk] * csq * inv_ld))
+                                                   - currentspeeds[kk]);
         }
-      }
 
-    }}
+        for (int kk = 5; kk < NSPEEDS; kk++)
+        {
+          tmp_cells->speeds[kk][current] = currentspeeds[kk]
+                                                  + params.omega
+                                                  * (w2 * (common + (u[kk] * c_sq) * (1 + u[kk] * csq * inv_ld))
+                                                   - currentspeeds[kk]);
+        }
+    }}}
   return EXIT_SUCCESS;
 }
 
