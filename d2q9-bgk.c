@@ -151,7 +151,8 @@ int main(int argc, char* argv[])
   gettimeofday(&timstr, NULL);
   init_toc = timstr.tv_sec + (timstr.tv_usec / 1000000.0);
   comp_tic=init_toc;
-
+  
+  
   for (int tt = 0; tt < params.maxIters; tt++)
   {
     timestep(params, cells, tmp_cells, obstacles);
@@ -201,6 +202,7 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
   accelerate_flow(params, cells, obstacles);
   for (int jj = 0; jj < params.ny; jj++)
   {
+    
     for (int ii = 0; ii < params.nx; ii++)
     {
       int y_n = (jj + 1) % params.ny;
@@ -233,13 +235,11 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
         currentspeeds[8] = cells->speeds[8][x_w + y_n*params.nx];
         /* compute local density total */
         float local_density = 0.f;
-
+        
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
           local_density += currentspeeds[kk];
         }
-
-                float inv_ld = 1.f / local_density;
 
         /* compute x velocity component */
         float u_x = (currentspeeds[1]
@@ -270,26 +270,30 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
         u[7] = - u_x - u_y;  /* south-west */
         u[8] =   u_x - u_y;  /* south-east */
 
+        float inv_ld = 1.f / local_density;
         float common = local_density - u_sq * csq * inv_ld;
 
-       tmp_cells->speeds[0][current] = currentspeeds[0]
+        
+        for (int kk = 0; kk < NSPEEDS; kk++)
+        {
+          if (kk == 0){
+          tmp_cells->speeds[0][current] = currentspeeds[0]
                                                   + params.omega
                                                   * (w0 * common
                                                    - currentspeeds[0]);
-        for (int kk = 1; kk < 5; kk++)
-        {
+          }
+          else if (kk < 5) {
           tmp_cells->speeds[kk][current] = currentspeeds[kk]
                                                   + params.omega
                                                   * (w1 * (common + (u[kk] * c_sq) * (1 + u[kk] * csq * inv_ld))
                                                    - currentspeeds[kk]);
-        }
-
-        for (int kk = 5; kk < NSPEEDS; kk++)
-        {
+          }
+          else {
           tmp_cells->speeds[kk][current] = currentspeeds[kk]
                                                   + params.omega
                                                   * (w2 * (common + (u[kk] * c_sq) * (1 + u[kk] * csq * inv_ld))
                                                    - currentspeeds[kk]);
+          }
         }
     }}}
   return EXIT_SUCCESS;
@@ -303,7 +307,9 @@ static int accelerate_flow(const t_param params, t_speed* __restrict__ cells, co
 
   /* modify the 2nd row of the grid */
   const int jj = params.ny - 2;
+  
 
+  
   for (int ii = 0; ii < params.nx; ii++)
   {
     /* if the cell is not occupied and
@@ -336,9 +342,12 @@ float av_velocity(const t_param params, t_speed* cells, int* obstacles)
   /* initialise */
   tot_u = 0.f;
 
+
+  
   /* loop over all non-blocked cells */
   for (int jj = 0; jj < params.ny; jj++)
   {
+    
     for (int ii = 0; ii < params.nx; ii++)
     {
       /* ignore occupied cells */
@@ -346,7 +355,8 @@ float av_velocity(const t_param params, t_speed* cells, int* obstacles)
       {
         /* local density total */
         float local_density = 0.f;
-
+        
+        
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
           local_density += cells->speeds[kk][ii + jj*params.nx];
@@ -465,7 +475,7 @@ int initialise(const char* paramfile, const char* obstaclefile,
   }
 
   /* the map of obstacles */
-  *obstacles_ptr = malloc(sizeof(int) * (params->ny * params->nx));
+  *obstacles_ptr =  malloc(sizeof(int) * (params->ny * params->nx));
 
   if (*obstacles_ptr == NULL) die("cannot allocate column memory for obstacles", __LINE__, __FILE__);
 
@@ -496,6 +506,7 @@ int initialise(const char* paramfile, const char* obstaclefile,
   /* first set all cells in obstacle array to zero */
   for (int jj = 0; jj < params->ny; jj++)
   {
+    
     for (int ii = 0; ii < params->nx; ii++)
     {
       (*obstacles_ptr)[ii + jj*params->nx] = 0;
@@ -574,6 +585,8 @@ float total_density(const t_param params, t_speed* cells)
 {
   float total = 0.f;  /* accumulator */
 
+  
+  
   for (int jj = 0; jj < params.ny; jj++)
   {
     for (int ii = 0; ii < params.nx; ii++)
@@ -605,8 +618,12 @@ int write_values(const t_param params, t_speed* cells, int* obstacles, float* av
     die("could not open file output file", __LINE__, __FILE__);
   }
 
+
+
+    
   for (int jj = 0; jj < params.ny; jj++)
   {
+    
     for (int ii = 0; ii < params.nx; ii++)
     {
       /* an occupied cell */
