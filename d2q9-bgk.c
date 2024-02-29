@@ -155,8 +155,10 @@ int main(int argc, char* argv[])
   
   for (int tt = 0; tt < params.maxIters; tt++)
   {
+    __assume_aligned(cells, 64);
+    __assume_aligned(tmp_cells, 64);
     timestep(params, cells, tmp_cells, obstacles);
-    t_speed* temp = cells;  // No dereference here
+    t_speed* temp = cells;
     cells = tmp_cells;
     tmp_cells = temp;
     av_vels[tt] = av_velocity(params, cells, obstacles);
@@ -200,9 +202,13 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
   const float w1 = 1.f / 9.f;  /* weighting factor */
   const float w2 = 1.f / 36.f; /* weighting factor */
   accelerate_flow(params, cells, obstacles);
+  __assume((params.nx)%128==0);
+  __assume((params.ny)%128==0);
+  __assume_aligned(cells, 64);
+  __assume_aligned(tmp_cells, 64);
   for (int jj = 0; jj < params.ny; jj++)
   {
-    
+    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
       int y_n = (jj + 1) % params.ny;
@@ -236,6 +242,7 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
         /* compute local density total */
         float local_density = 0.f;
         
+        #pragma omp simd
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
           local_density += currentspeeds[kk];
@@ -273,7 +280,7 @@ static int timestep(const t_param params, t_speed* __restrict__ cells, t_speed* 
         float inv_ld = 1.f / local_density;
         float common = local_density - u_sq * csq * inv_ld;
 
-        
+        #pragma omp simd
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
           if (kk == 0){
@@ -308,8 +315,9 @@ static int accelerate_flow(const t_param params, t_speed* __restrict__ cells, co
   /* modify the 2nd row of the grid */
   const int jj = params.ny - 2;
   
-
-  
+  __assume_aligned(cells, 64);
+  __assume((params.nx)%128==0);
+  #pragma omp simd
   for (int ii = 0; ii < params.nx; ii++)
   {
     /* if the cell is not occupied and
@@ -342,12 +350,13 @@ float av_velocity(const t_param params, t_speed* cells, int* obstacles)
   /* initialise */
   tot_u = 0.f;
 
-
-  
+  __assume_aligned(cells, 64);
+  __assume((params.nx)%128==0);
+  __assume((params.ny)%128==0);
   /* loop over all non-blocked cells */
   for (int jj = 0; jj < params.ny; jj++)
   {
-    
+    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
       /* ignore occupied cells */
@@ -356,7 +365,7 @@ float av_velocity(const t_param params, t_speed* cells, int* obstacles)
         /* local density total */
         float local_density = 0.f;
         
-        
+        #pragma omp simd
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
           local_density += cells->speeds[kk][ii + jj*params.nx];
@@ -460,17 +469,17 @@ int initialise(const char* paramfile, const char* obstaclefile,
   */
 
   /* main grid */
-  *cells_ptr = (t_speed*)malloc(sizeof(t_speed));
+  *cells_ptr = (t_speed*)_mm_malloc(sizeof(t_speed), 64);
   if (*cells_ptr == NULL) die("cannot allocate memory for t_speed structure", __LINE__, __FILE__);
 
-  *tmp_cells_ptr = (t_speed*)malloc(sizeof(t_speed));
+  *tmp_cells_ptr = (t_speed*)_mm_malloc(sizeof(t_speed), 64);
   if (*tmp_cells_ptr == NULL) die("cannot allocate memory for t_speed structure", __LINE__, __FILE__);
 
   for (int i = 0; i < NSPEEDS; ++i) {
-    (*cells_ptr)->speeds[i] = (float*)malloc(params->ny * params->nx * sizeof(float));
+    (*cells_ptr)->speeds[i] = (float*)_mm_malloc(params->ny * params->nx * sizeof(float), 64);
     if ((*cells_ptr)->speeds[i] == NULL) die("cannot allocate memory for cells speeds", __LINE__, __FILE__);
 
-    (*tmp_cells_ptr)->speeds[i] = (float*)malloc(params->ny * params->nx * sizeof(float));
+    (*tmp_cells_ptr)->speeds[i] = (float*)_mm_malloc(params->ny * params->nx * sizeof(float), 64);
     if ((*tmp_cells_ptr)->speeds[i] == NULL) die("cannot allocate memory for tmp_cells speeds", __LINE__, __FILE__);
   }
 
@@ -483,9 +492,12 @@ int initialise(const char* paramfile, const char* obstaclefile,
   float w0 = params->density * 4.f / 9.f;
   float w1 = params->density      / 9.f;
   float w2 = params->density      / 36.f;
-
+  __assume_aligned(*cells_ptr, 64);
+  __assume((params->nx)%128==0);
+  __assume((params->ny)%128==0);
   for (int jj = 0; jj < params->ny; jj++)
   {
+    #pragma omp simd
     for (int ii = 0; ii < params->nx; ii++)
     {
       /* centre */
@@ -502,11 +514,13 @@ int initialise(const char* paramfile, const char* obstaclefile,
       (*cells_ptr)->speeds[8][ii + jj * params->nx] = w2;
     }
   }
-
+  
+  __assume((params->nx)%128==0);
+  __assume((params->ny)%128==0);
   /* first set all cells in obstacle array to zero */
   for (int jj = 0; jj < params->ny; jj++)
   {
-    
+    #pragma omp simd
     for (int ii = 0; ii < params->nx; ii++)
     {
       (*obstacles_ptr)[ii + jj*params->nx] = 0;
@@ -557,10 +571,10 @@ int finalise(const t_param* params, t_speed** cells_ptr, t_speed** tmp_cells_ptr
   ** free up allocated memory
   */
   for (int i = 0; i < NSPEEDS; ++i) {
-    free((*cells_ptr)->speeds[i]);
+    _mm_free((*cells_ptr)->speeds[i]);
     (*cells_ptr)->speeds[i] = NULL;
 
-    free((*tmp_cells_ptr)->speeds[i]);
+    _mm_free((*tmp_cells_ptr)->speeds[i]);
     (*tmp_cells_ptr)->speeds[i] = NULL;
     }
 
@@ -585,8 +599,9 @@ float total_density(const t_param params, t_speed* cells)
 {
   float total = 0.f;  /* accumulator */
 
-  
-  
+  __assume_aligned(cells, 64);
+  __assume((params.nx)%128==0);
+  __assume((params.ny)%128==0);
   for (int jj = 0; jj < params.ny; jj++)
   {
     for (int ii = 0; ii < params.nx; ii++)
@@ -618,12 +633,11 @@ int write_values(const t_param params, t_speed* cells, int* obstacles, float* av
     die("could not open file output file", __LINE__, __FILE__);
   }
 
-
-
-    
+  __assume((params.nx)%128==0);
+  __assume((params.ny)%128==0);
   for (int jj = 0; jj < params.ny; jj++)
   {
-    
+    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
       /* an occupied cell */
@@ -637,6 +651,7 @@ int write_values(const t_param params, t_speed* cells, int* obstacles, float* av
       {
         local_density = 0.f;
 
+        #pragma omp simd
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
           local_density += cells->speeds[kk][ii + jj*params.nx];
