@@ -1,0 +1,278 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+
+Begin optimization report for: main(int, char **)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(156,3)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(357,3) inlined into d2q9-bgk.c(164,19)
+      remark #25460: No loop optimizations reported
+
+      LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(164,19)
+      <Peeled loop for vectorization>
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(164,19)
+         remark #15301: SIMD LOOP WAS VECTORIZED
+
+         LOOP BEGIN at d2q9-bgk.c(369,9) inlined into d2q9-bgk.c(164,19)
+         LOOP END
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(164,19)
+      <Remainder loop for vectorization>
+      LOOP END
+   LOOP END
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(357,3) inlined into d2q9-bgk.c(186,41)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(186,41)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(186,41)
+      remark #15301: SIMD LOOP WAS VECTORIZED
+
+      LOOP BEGIN at d2q9-bgk.c(369,9) inlined into d2q9-bgk.c(186,41)
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(186,41)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(573,3) inlined into d2q9-bgk.c(192,3)
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+d2q9-bgk.c(158:31)::main:  Assume directive not useful: removing
+
+d2q9-bgk.c(159:35)::main:  Assume directive not useful: removing
+
+===========================================================================
+
+Begin optimization report for: timestep(const t_param, t_speed *__restrict__, t_speed *__restrict__, const int *__restrict__)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(321,3) inlined into d2q9-bgk.c(204,3)
+<Peeled loop for vectorization>
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(321,3) inlined into d2q9-bgk.c(204,3)
+   remark #15301: SIMD LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(321,3) inlined into d2q9-bgk.c(204,3)
+<Remainder loop for vectorization>
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(212,5)
+   remark #15301: SIMD LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(212,5)
+<Remainder loop for vectorization>
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(209,3)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(212,5)
+      remark #15301: SIMD LOOP WAS VECTORIZED
+
+      LOOP BEGIN at d2q9-bgk.c(246,9)
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(284,9)
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(212,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+===========================================================================
+
+Begin optimization report for: write_values(const t_param, t_speed *, int *, float *)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(638,3)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(641,5)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(641,5)
+      remark #15301: SIMD LOOP WAS VECTORIZED
+
+      LOOP BEGIN at d2q9-bgk.c(655,9)
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(641,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+===========================================================================
+
+Begin optimization report for: av_velocity(const t_param, t_speed *, int *)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(357,3)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(360,5)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(360,5)
+      remark #15301: SIMD LOOP WAS VECTORIZED
+
+      LOOP BEGIN at d2q9-bgk.c(369,9)
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(360,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+===========================================================================
+
+Begin optimization report for: finalise(const t_param *, t_speed **, t_speed **, int **, float **)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(573,3)
+LOOP END
+===========================================================================
+
+Begin optimization report for: calc_reynolds(const t_param, t_speed *, int *)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(357,3) inlined into d2q9-bgk.c(595,10)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(595,10)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(595,10)
+      remark #15301: SIMD LOOP WAS VECTORIZED
+
+      LOOP BEGIN at d2q9-bgk.c(369,9) inlined into d2q9-bgk.c(595,10)
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(360,5) inlined into d2q9-bgk.c(595,10)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+===========================================================================
+
+Begin optimization report for: total_density(const t_param, t_speed *)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(609,7)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(605,3)
+      remark #25460: No loop optimizations reported
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+      <Peeled loop for vectorization>
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+         remark #15301: PERMUTED LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+      <Remainder loop for vectorization>
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(605,3)
+   <Remainder>
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+      <Peeled loop for vectorization>
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+         remark #15301: PERMUTED LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+      <Remainder loop for vectorization>
+      LOOP END
+   LOOP END
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(609,7)
+<Remainder>
+
+   LOOP BEGIN at d2q9-bgk.c(605,3)
+      remark #25460: No loop optimizations reported
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+         remark #15301: PERMUTED LOOP WAS VECTORIZED
+      LOOP END
+
+      LOOP BEGIN at d2q9-bgk.c(607,5)
+      <Remainder loop for vectorization>
+      LOOP END
+   LOOP END
+LOOP END
+===========================================================================
+
+Begin optimization report for: initialise(const char *, const char *, t_param *, t_speed **, t_speed **, int **, float **)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at d2q9-bgk.c(498,3)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(501,5)
+      remark #15301: SIMD LOOP WAS VECTORIZED
+   LOOP END
+LOOP END
+
+LOOP BEGIN at d2q9-bgk.c(521,3)
+   remark #25460: No loop optimizations reported
+
+   LOOP BEGIN at d2q9-bgk.c(524,5)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(524,5)
+      remark #15301: SIMD LOOP WAS VECTORIZED
+   LOOP END
+
+   LOOP BEGIN at d2q9-bgk.c(524,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+===========================================================================

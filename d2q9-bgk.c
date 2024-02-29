@@ -355,13 +355,14 @@ float av_velocity(const t_param params, t_speed* cells, int* obstacles)
   __assume((params.nx)%128==0);
   __assume((params.ny)%128==0);
   /* loop over all non-blocked cells */
-  #pragma omp parallel for collapse(2)
   for (int jj = 0; jj < params.ny; jj++)
   {
+    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
+      int current = ii + jj*params.nx;
       /* ignore occupied cells */
-      if (!obstacles[ii + jj*params.nx])
+      if (!obstacles[current])
       {
         /* local density total */
         float local_density = 0.f;
@@ -369,24 +370,24 @@ float av_velocity(const t_param params, t_speed* cells, int* obstacles)
         #pragma omp simd
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
-          local_density += cells->speeds[kk][ii + jj*params.nx];
+          local_density += cells->speeds[kk][current];
         }
 
         /* x-component of velocity */
-        float u_x = (cells->speeds[1][ii + jj*params.nx]
-                      + cells->speeds[5][ii + jj*params.nx]
-                      + cells->speeds[8][ii + jj*params.nx]
-                      - (cells->speeds[3][ii + jj*params.nx]
-                         + cells->speeds[6][ii + jj*params.nx]
-                         + cells->speeds[7][ii + jj*params.nx]))
+        float u_x = (cells->speeds[1][current]
+                      + cells->speeds[5][current]
+                      + cells->speeds[8][current]
+                      - (cells->speeds[3][current]
+                         + cells->speeds[6][current]
+                         + cells->speeds[7][current]))
                      / local_density;
         /* compute y velocity component */
-        float u_y = (cells->speeds[2][ii + jj*params.nx]
-                      + cells->speeds[5][ii + jj*params.nx]
-                      + cells->speeds[6][ii + jj*params.nx]
-                      - (cells->speeds[4][ii + jj*params.nx]
-                         + cells->speeds[7][ii + jj*params.nx]
-                         + cells->speeds[8][ii + jj*params.nx]))
+        float u_y = (cells->speeds[2][current]
+                      + cells->speeds[5][current]
+                      + cells->speeds[6][current]
+                      - (cells->speeds[4][current]
+                         + cells->speeds[7][current]
+                         + cells->speeds[8][current]))
                      / local_density;
         /* accumulate the norm of x- and y- velocity components */
         tot_u += sqrtf((u_x * u_x) + (u_y * u_y));
@@ -636,13 +637,14 @@ int write_values(const t_param params, t_speed* cells, int* obstacles, float* av
 
   __assume((params.nx)%128==0);
   __assume((params.ny)%128==0);
-  #pragma omp parallel for collapse(2)
   for (int jj = 0; jj < params.ny; jj++)
   {
+    #pragma omp simd
     for (int ii = 0; ii < params.nx; ii++)
     {
+      int current = ii + jj*params.nx;
       /* an occupied cell */
-      if (obstacles[ii + jj*params.nx])
+      if (obstacles[current])
       {
         u_x = u_y = u = 0.f;
         pressure = params.density * c_sq;
@@ -655,24 +657,24 @@ int write_values(const t_param params, t_speed* cells, int* obstacles, float* av
         #pragma omp simd
         for (int kk = 0; kk < NSPEEDS; kk++)
         {
-          local_density += cells->speeds[kk][ii + jj*params.nx];
+          local_density += cells->speeds[kk][current];
         }
 
         /* compute x velocity component */
-        u_x = (cells->speeds[1][ii + jj*params.nx]
-               + cells->speeds[5][ii + jj*params.nx]
-               + cells->speeds[8][ii + jj*params.nx]
-               - (cells->speeds[3][ii + jj*params.nx]
-                  + cells->speeds[6][ii + jj*params.nx]
-                  + cells->speeds[7][ii + jj*params.nx]))
+        u_x = (cells->speeds[1][current]
+               + cells->speeds[5][current]
+               + cells->speeds[8][current]
+               - (cells->speeds[3][current]
+                  + cells->speeds[6][current]
+                  + cells->speeds[7][current]))
               / local_density;
         /* compute y velocity component */
-        u_y = (cells->speeds[2][ii + jj*params.nx]
-               + cells->speeds[5][ii + jj*params.nx]
-               + cells->speeds[6][ii + jj*params.nx]
-               - (cells->speeds[4][ii + jj*params.nx]
-                  + cells->speeds[7][ii + jj*params.nx]
-                  + cells->speeds[8][ii + jj*params.nx]))
+        u_y = (cells->speeds[2][current]
+               + cells->speeds[5][current]
+               + cells->speeds[6][current]
+               - (cells->speeds[4][current]
+                  + cells->speeds[7][current]
+                  + cells->speeds[8][current]))
               / local_density;
         /* compute norm of velocity */
         u = sqrtf((u_x * u_x) + (u_y * u_y));
